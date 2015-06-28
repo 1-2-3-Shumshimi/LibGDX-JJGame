@@ -16,6 +16,8 @@ public class JJGame extends ApplicationAdapter {
 		img = new Texture("badlogic.jpg");
 	}
 
+	// Hello hello 123
+	
 	@Override
 	public void render () {
 		Gdx.gl.glClearColor(1, 0, 0, 1);
