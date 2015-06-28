@@ -14,6 +14,8 @@ public class JJGame extends ApplicationAdapter {
 	public void create () {
 		batch = new SpriteBatch();
 		img = new Texture("badlogic.jpg");
+		
+		//booo la la boo la la hoo hoo hoo hoo
 	}
 
 
