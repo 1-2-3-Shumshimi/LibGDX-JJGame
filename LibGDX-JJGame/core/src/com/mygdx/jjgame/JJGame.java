@@ -16,6 +16,7 @@ public class JJGame extends ApplicationAdapter {
 		img = new Texture("badlogic.jpg");
 		
 		//booo la la boo la la hoo hoo hoo hoo
+		//testing testing 12345
 	}
 
 
