@@ -46,6 +46,7 @@ public class JJGame extends ApplicationAdapter {
 		batch.draw(player.texture, player.position.x - player.sprite.getOriginX(), player.position.y - player.sprite.getOriginY()); 
 		// this draw() code is based on y-up, also adjusting for the sprite's origin
 		
+		
 		batch.end();
 	}
 }
