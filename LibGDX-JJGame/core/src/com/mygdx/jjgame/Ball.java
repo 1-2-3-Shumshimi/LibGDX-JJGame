@@ -9,21 +9,40 @@ public abstract class Ball {
 
 	Vector2 position;
 	Vector2 velocity;
+	float magnitude;
 	Texture texture;
 	Sprite sprite;
+	int type; 
+	// 0 for player, 1 for good blue, 2 for bad green, and more to come!
+	boolean isGood;
+	// determines whether collisions result in a positive or negative score
+	int points;
+	int collisionCount;
+	int maxCollisionCount;
 	
-	protected Ball(Vector2 position, String textureLoc){
+	protected Ball(Vector2 position, float magnitude, int maxCollisionCount, boolean isGood, String textureLoc){
 		this.position = position;
 		this.texture = new Texture(textureLoc);
 		this.sprite = new Sprite(new TextureRegion(texture, 0, 0, texture.getWidth(), texture.getHeight()));
 		sprite.setOriginCenter(); // is not for draw() method though, only for rotations and stuff like that
 		
 		// set initial velocity vector - have the magnitude be 4, but a random direction
-		velocity.x = (int)(Math.random()*5);
+		this.magnitude = magnitude;
+		velocity = new Vector2();
+		velocity.x = (int)(Math.random()*this.magnitude);
 		velocity.y = (float) Math.sqrt(16 - (velocity.x * velocity.x));
+		
+		collisionCount = 0;
+		this.maxCollisionCount = maxCollisionCount;
+		
+		this.isGood = isGood;
 	}
 	
+	// Usually called in the render method of the game class - updates position and other features specific to the ball
 	public abstract void update();
+	
+	// A method to allow balls to get info on the player. Used to implement any special characteristics a ball might have.
+	public abstract void getPlayerInfo(Player player);
 	
 	/**
 	 * Checks whether the two balls are close enough to be consider collided.
@@ -54,31 +73,11 @@ public abstract class Ball {
 	 */
 	public void resolveCollision(Ball ball){
 		
-		// get the minimum translational difference (mtd)
-		Vector2 delta = (position.sub(ball.position));
-	    float d = delta.len();
-	    // minimum translation distance to push balls apart after intersecting
-	    float multiplyFactor = (float) (0.5*(((sprite.getHeight()/2 + ball.sprite.getHeight()/2)-d)/d));
-	    Vector2 mtd = new Vector2(delta.x * multiplyFactor, delta.y * multiplyFactor);
-	    
-	    // update positions
-	    position = position.add(mtd);
-	    ball.position = position.sub(mtd);
-	    
-	    // impact speed
-	    Vector2 v = (this.velocity.sub(ball.velocity));
-	    float vn = v.dot(mtd.nor()); 
-
-	    // sphere intersecting but moving away from each other already
-	    if (vn > 0.0f) return;
-
-	    // collision impulse
-	    float i = -vn; // simplified due to assuming perfect collision and equal masses
-	    Vector2 impulse = new Vector2(mtd.x*i, mtd.y*i);
-
-	    // change in momentum
-	    this.velocity = this.velocity.add(impulse);
-	    ball.velocity = ball.velocity.sub(impulse);
+		Vector2 delta = new Vector2(position.x-ball.position.x, position.y-ball.position.y);
+		float d = delta.len();
+		velocity = delta.scl(magnitude/d); // maintain the magnitude on velocities because we assume perfect elastic collision
+		ball.velocity = new Vector2(-velocity.x, -velocity.y);
+		
 
 	}
 }
