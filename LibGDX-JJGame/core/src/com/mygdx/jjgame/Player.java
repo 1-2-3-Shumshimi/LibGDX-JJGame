@@ -1,77 +1,61 @@
 package com.mygdx.jjgame;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input.Keys;
+import com.badlogic.gdx.Input.Peripheral;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Sprite;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.utils.TimeUtils;
 
-public class Player extends Ball{
-
-	public boolean isGhost;
-
+public class Player {
+	
+	Vector2 position;
+	Vector2 velocity;
+	
+	// Helping accelerometer
+	long startTime;
+	long elapsedTime;
+	
+	Texture texture;
+	Sprite sprite;
+	
 	public Player(Vector2 position, String textureLoc){
-		super(position, 0, 0, true, textureLoc);
+		this.position = position;
+		this.texture = new Texture(textureLoc);
+		this.sprite = new Sprite(new TextureRegion(texture, 0, 0, texture.getWidth(), texture.getHeight()));
+		sprite.setOriginCenter(); // is not for draw() method though, only for rotations and stuff like that
 		
-		// Reset the velocity from the super class - now an unchanging velocity in any direction
-		velocity.x = 4;
-		velocity.y = 4;
-		
-		isGhost = false;
-		type = 0;
-	}
-
-	public void update(){
-		// basic orthogonal movement
-		if (Gdx.input.isKeyPressed(Keys.W)){
-			position.y += velocity.y;
-		} if (Gdx.input.isKeyPressed(Keys.A)){
-			position.x -= velocity.x;
-		} if (Gdx.input.isKeyPressed(Keys.S)){
-			position.y -= velocity.y;
-		} if (Gdx.input.isKeyPressed(Keys.D)){
-			position.x += velocity.x;
-		}
-
-		// "ghost mode" or just changing textures
-		if (Gdx.input.isKeyPressed(Keys.SPACE)){
-			texture = new Texture("Red circle transparent.png");
-			isGhost = true;
-		} else {
-			texture = new Texture("Red circle.png");
-			isGhost = false;
-		}
-
-		// teleporting
-		if (Gdx.input.isTouched()){
-			position.x = Gdx.input.getX(); 
-			position.y = -Gdx.input.getY() + Gdx.graphics.getHeight(); 
-			// this get() code is based on y-down, must adjust the y value	
-		}
-		checkWallPlayer();
+		this.velocity = new Vector2(0, 0);
+		startTime = TimeUtils.millis(); // want seconds
+		elapsedTime = startTime;
 	}
 	
-	private void checkWallPlayer(){
-		if (position.x <= sprite.getWidth()/2){
-			position.x = sprite.getWidth()/2;
-		}
-		else if (position.x + sprite.getWidth()/2 >= Gdx.graphics.getWidth()){ 
-			position.x = Gdx.graphics.getWidth() - sprite.getWidth()/2;
+	/**
+	 * Updates the player's position and/or velocity. Called on in the game's render method.
+	 */
+	public void update(){
+		
+		boolean accelAvailable = Gdx.input.isPeripheralAvailable(Peripheral.Accelerometer);
+		
+		
+		if (accelAvailable){
+			float accelX = Gdx.input.getAccelerometerX(); // axis left-right
+		    float accelY = Gdx.input.getAccelerometerY(); // axis top-down
+		    //float accelZ = Gdx.input.getAccelerometerZ(); // axis front-back
+		    if (accelX == 0 || accelY == 0){
+		    	startTime = TimeUtils.millis(); // acceleration has stopped, reset count
+		    	elapsedTime = startTime; 
+		    } else {
+		    	elapsedTime = TimeUtils.timeSinceMillis(startTime);
+		    	position.x -= accelX * velocity.x * elapsedTime/1000;
+		    	position.y -= accelY * velocity.y * elapsedTime/1000;
+		    }
+		} else {
+			// something having to do with pressing keys
 		}
 		
-		if (position.y <= sprite.getHeight()/2){
-			position.y = sprite.getHeight()/2;
-		}
-		else if (position.y + sprite.getHeight()/2 >= Gdx.graphics.getHeight()){ 
-			position.y = Gdx.graphics.getHeight() - sprite.getHeight()/2;
-		}
+	    
+	    
 	}
-
-	@Override
-	public void getPlayerInfo(Player player) {
-		// Do nothing...for now
-		// Perhaps if we have multiplayer mode this might come in handy
-		
-	}
-
-
 }
